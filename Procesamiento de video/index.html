@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Procesamiento de video</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<style>
+		#btnCambia{
+			cursor: pointer;
+			margin-top: 20px;
+			font-size: 40px;
+		}
+	</style>
+</head>
+<body>
+	<video id="video" src="video.mp4" autoplay muted loop controls></video>
+	<canvas id="output-canvas" width="1280" height="720" ></canvas>
+	<br>
+	<center><button class="btn btn-primary" id="btnCambia">Cambiar el fondo</button></center>
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">	</script>
+	<script>
+		let video,img ,c1,ctx1,c_tmp,ctx_tmp; 
+		let fondoVerde = false, Numfond = 1;
+		function init() {
+		  video = document.getElementById('video');
+		  c1 = document.getElementById('output-canvas');
+		  ctx1 = c1.getContext('2d');
+
+		  img = new Image();
+		  img.src = "fondo2.jpg";
+		  img.width = "1280";
+		  img.height = "720";
+
+		  c_tmp = document.createElement('canvas');
+		  c_tmp.setAttribute('width', 1280);
+		  c_tmp.setAttribute('height', 720);
+		  ctx_tmp = c_tmp.getContext('2d');
+		  
+		  video.addEventListener('play', computeFrame );
+		}
+		function computeFrame() {
+		    ctx_tmp.drawImage(video, 0, 0, video.videoWidth , video.videoHeight );
+		    let frame = ctx_tmp.getImageData(0, 0, video.videoWidth, video.videoHeight );
+
+		    ctx_tmp.drawImage(img, 0, 0, video.videoWidth , video.videoHeight );
+		    let frame2 = ctx_tmp.getImageData(0, 0, video.videoWidth, video.videoHeight );
+
+		    var tam = frame.data.length /4;
+		    for (let i = 0; i < tam; i++) {
+				let r = frame.data[i * 4 + 0];
+				let g = frame.data[i * 4 + 1];
+				let b = frame.data[i * 4 + 2];
+				if (r > 70 && r < 163 && g > 95 && g < 220 && b > 25 && b < 150 && !fondoVerde){
+				  	frame.data[i * 4 + 0] = frame2.data[i * 4 + 0];
+				  	frame.data[i * 4 + 1] = frame2.data[i * 4 + 1];
+				  	frame.data[i * 4 + 2] = frame2.data[i * 4 + 2];
+				}
+   					
+			}
+		    ctx1.putImageData(frame, 0, 0);
+		    setTimeout(computeFrame, 0);
+		}
+		function cambiaFondo(){
+			if(fondoVerde){
+				if(Numfond===1){
+					img.src = "fondo.jpg";
+					Numfond++;
+				}
+				else{
+					img.src = "fondo2.jpg";
+					Numfond = 1;
+				}
+				fondoVerde = false;
+			}
+			else
+				fondoVerde = true;
+		}
+		document.addEventListener("DOMContentLoaded", () => {
+		  init();
+		  document.getElementById("btnCambia").addEventListener("click",cambiaFondo);
+		});
+	</script>
+</body>
+</html>
